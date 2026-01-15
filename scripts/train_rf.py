@@ -65,7 +65,7 @@ X_test_scaled = scaler.transform(X_test)
 print("Scaling complete.")
 
 print("\nStep 7: Training Random Forest model on ALL 16M+ clean data...")
-print("NOTE: Random Forest is slower than LightGBM. This may take 20-40 minutes.")
+
 
 clf = RandomForestClassifier(
     n_estimators=100,

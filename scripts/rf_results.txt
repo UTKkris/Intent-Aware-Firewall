@@ -1,0 +1,58 @@
+Step 1: Loading full dataset...
+Loaded 16233002 rows.
+Step 2: Separating features...
+X and y created.
+Step 3: Splitting data...
+Step 4: Fitting stateful features...
+Step 5: Final cleaning...
+Aligned columns, using 79 features.
+Step 6: Scaling...
+
+Step 7: Training Random Forest model on ALL 16M+ rows...
+NOTE: This may take 20-40 minutes.
+Training complete. Time taken: 465.61 seconds (7.76 minutes).
+
+--- EVALUATION RESULTS ---
+Accuracy: 0.988053 (98.8053%)
+
+Confusion Matrix:
+[[4028118   18093]
+ [  40086  783604]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Benign       0.99      1.00      0.99   4046211
+      Attack       0.98      0.95      0.96    823690
+
+    accuracy                           0.99   4869901
+   macro avg       0.98      0.97      0.98   4869901
+weighted avg       0.99      0.99      0.99   4869901
+
+
+--- TOP 20 FEATURE IMPORTANCE ---
+              Feature  Importance
+57           Dst Port    0.066596
+51  Init Fwd Win Byts    0.050808
+15  Init Bwd Win Byts    0.047996
+1    Fwd Pkt Len Mean    0.045004
+48    Fwd Pkt Len Max    0.044684
+54   Subflow Fwd Byts    0.041381
+43    TotLen Fwd Pkts    0.036014
+40   Fwd Seg Size Avg    0.033947
+72       Flow IAT Min    0.032294
+59     Fwd Header Len    0.028453
+76   Fwd Seg Size Min    0.027718
+35       Fwd IAT Mean    0.025838
+23        Pkt Len Max    0.024460
+8         Fwd IAT Max    0.024183
+70        Flow Byts/s    0.021702
+17      Flow Duration    0.020898
+34      Flow IAT Mean    0.020453
+73         Fwd Pkts/s    0.019944
+7         Fwd IAT Tot    0.019651
+56        Pkt Len Var    0.018891
+
+Step 8: Saving model assets...
+
+Done! All files and results saved to rf_results.txt.

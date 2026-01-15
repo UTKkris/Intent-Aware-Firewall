@@ -1,9 +1,7 @@
-scapy
 pandas
 numpy
 scikit-learn
-tensorflow
-matplotlib
-flask
-streamlit
-dash
+scapy
+lightgbm
+pyarrow
+joblib

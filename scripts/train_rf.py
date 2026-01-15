@@ -1,7 +1,4 @@
-"""
-Main script for training the Intent-Aware Firewall model using Random Forest.
-(High-RAM Edition for 64GB PC - No Sampling)
-"""
+
 
 import pandas as pd
 import numpy as np

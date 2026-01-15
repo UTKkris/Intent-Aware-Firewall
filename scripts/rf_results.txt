@@ -9,7 +9,7 @@ Aligned columns, using 79 features.
 Step 6: Scaling...
 
 Step 7: Training Random Forest model on ALL 16M+ rows...
-NOTE: This may take 20-40 minutes.
+
 Training complete. Time taken: 465.61 seconds (7.76 minutes).
 
 --- EVALUATION RESULTS ---
@@ -55,4 +55,4 @@ weighted avg       0.99      0.99      0.99   4869901
 
 Step 8: Saving model assets...
 
-Done! All files and results saved to rf_results.txt.
+

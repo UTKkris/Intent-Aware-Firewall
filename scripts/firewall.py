@@ -34,8 +34,8 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # --- 1. Load Model and Assets ---
 try:
     print("Loading model and assets...")
-    clf = joblib.load('intent_firewall_model.joblib')
-    scaler = joblib.load('data_scaler.joblib')
+    clf = joblib.load('intent_firewall_model_LGBM.joblib')
+    scaler = joblib.load('data_scaler_LGBM.joblib')
 
     with open('size_stats.json', 'r') as f:
         size_stats = json.load(f)

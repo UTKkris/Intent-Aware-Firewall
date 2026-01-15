@@ -46,7 +46,7 @@ def is_suspicious_time(hour, suspicious_hours=None):
         bool: True if the hour is in the suspicious set, False otherwise.
     """
     if suspicious_hours is None:
-        suspicious_hours = set(range(0, 6))  # 0 AM to 5 AM
+        suspicious_hours = set(range(0, 6))
     return hour in suspicious_hours
 
 def add_suspicious_time_flag(df, suspicious_hours=None):
@@ -65,7 +65,6 @@ def add_suspicious_time_flag(df, suspicious_hours=None):
     """
     if 'Hour' not in df.columns:
         df = add_time_features(df)
-        
     df = df.copy()
     df['SuspiciousTime'] = df['Hour'].apply(
         lambda h: 1 if is_suspicious_time(h, suspicious_hours) else 0
@@ -97,73 +96,43 @@ def add_packet_size_flags(df, size_col='Packet Length', mean=None, std=None):
     """
     if size_col not in df.columns:
         df['SizeAnomaly'] = 0
-        return df, 0, 0  # Always return 3 values
-
+        return df, 0, 0
     df = df.copy()
-    
     if mean is None:
         mean = df[size_col].mean()
     if std is None:
         std = df[size_col].std()
-
-    # Handle cases with zero or no variance
     if std == 0 or pd.isna(std):
         df['SizeAnomaly'] = 0
-        return df, mean, 0 
-        
+        return df, mean, 0
     threshold = 3 * std
     df['SizeAnomaly'] = df[size_col].apply(
         lambda x: 1 if abs(x - mean) > threshold else 0
     )
-    
     return df, mean, std
 
-# In features.py
-
-# features.py
-
-def calculate_windowed_features(df, window='1S', rolling_window=3): # Note: I updated defaults based on our last firewall version
+def calculate_windowed_features(df, window='1S', rolling_window=3):
     """
     Calculates windowed packet rate and burst features grouped by 'Src IP'.
-    # ... (rest of the docstring) ...
     """
     if 'Src IP' not in df.columns or 'Timestamp' not in df.columns:
-        return pd.DataFrame() 
-
+        return pd.DataFrame()
     df_indexed = df.set_index('Timestamp')
-
-    # 1. Get packet counts.
     packet_counts_obj = df_indexed.groupby('Src IP').resample(window).size()
-
-    # 2. Ensure packet_counts is a DataFrame with 'PacketRate'
     if isinstance(packet_counts_obj, pd.Series):
         packet_counts = packet_counts_obj.to_frame(name='PacketRate')
     else:
         packet_counts = packet_counts_obj
         count_col = packet_counts.columns[-1]
         packet_counts = packet_counts.rename(columns={count_col: 'PacketRate'})
-
-        # Drop redundant 'Src IP' column if it exists
         if 'Src IP' in packet_counts.columns:
             packet_counts = packet_counts.drop(columns='Src IP')
-
-    # 3. Calculate rolling std dev ('BurstFeature')
     burst_feature_series = packet_counts.groupby(level=0)['PacketRate'] \
                                         .rolling(window=rolling_window) \
                                         .std()
-
-    # 4. Assign the Series' *values*
     windowed_features = packet_counts
     windowed_features['BurstFeature'] = burst_feature_series.values
-
-    # 5. Fill NaNs (from rolling window) with 0
     windowed_features = windowed_features.fillna(0)
-
-    # --- THIS IS THE FIX ---
-    # 6. Check for and drop redundant 'Timestamp' column before resetting index
     if 'Timestamp' in windowed_features.columns:
         windowed_features = windowed_features.drop(columns='Timestamp')
-    # --- END FIX ---
-
-    # 7. Reset index (this will now work)
     return windowed_features.reset_index()

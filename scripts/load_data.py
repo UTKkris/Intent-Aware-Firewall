@@ -1,7 +1,3 @@
-"""
-Main script for training the Intent-Aware Firewall model.
-(Version 6 - Simplified for Clean Parquet)
-"""
 
 import pandas as pd
 import numpy as np
@@ -15,11 +11,9 @@ import json
 import warnings
 import sys
 
-# --- Silence Harmless Warnings ---
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 
-# --- Step 1: Load Full *CLEAN* Dataset ---
 print("Step 1: Loading full, clean dataset from Parquet file...")
 parquet_file = r'../data/cic_ids_2018_full_harmonized_CLEAN.parquet' 
 
@@ -33,22 +27,17 @@ except FileNotFoundError:
 print(f"Loaded {df.shape[0]} total clean rows.")
 print(f"Label distribution:\n{df['Label'].value_counts(normalize=True)}")
 
-# --- Step 2: Separate Features (X) and Target (y) ---
 print("\nStep 2: Separating features and target...")
 X = df.drop('Label', axis=1)
 y = df['Label']
 print("X and y created.")
 
-# --- Step 3: Train-Test Split ---
 print("\nStep 3: Splitting data into train/test sets...")
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 print(f"Train set size: {X_train.shape[0]}, Test set size: {X_test.shape[0]}")
 
-# --- Step 4: Add STATEFUL Features (AFTER SPLIT) ---
-# Note: This is optional, as the dataset likely has 'Pkt Len' features,
-# but we keep it for consistency with the 'features.py' module.
 print("\nStep 4: Fitting stateful features on training data...")
-size_col = 'Pkt Len Mean' # Use a feature that exists
+size_col = 'Pkt Len Mean'
 if 'Packet Length' in X_train.columns:
     size_col = 'Packet Length'
     
@@ -56,14 +45,11 @@ X_train, train_mean, train_std = fe.add_packet_size_flags(X_train.copy(), size_c
 X_test, _, _ = fe.add_packet_size_flags(X_test.copy(), size_col, mean=train_mean, std=train_std)
 print("Stateful features added.")
 
-# --- Step 5: Final Prep for ML ---
 print("\nStep 5: Final data preparation for modeling...")
-# Drop only identifier columns.
 drop_cols = ['Flow ID', 'Src IP', 'Src Port', 'Dst IP', 'Timestamp']
 X_train = X_train.drop(columns=drop_cols, errors='ignore')
 X_test = X_test.drop(columns=drop_cols, errors='ignore')
 
-# Align columns
 train_cols = X_train.columns
 test_cols = X_test.columns
 shared_cols = list(train_cols.intersection(test_cols))
@@ -71,14 +57,12 @@ X_train = X_train[shared_cols]
 X_test = X_test[shared_cols]
 print(f"Aligned columns, using {len(shared_cols)} features.")
 
-# --- Step 6: Scale Features (AFTER SPLIT) ---
 print("\nStep 6: Scaling features...")
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 print("Scaling complete.")
 
-# --- Step 7: Train, Predict, Evaluate ---
 print("\nStep 7: Training model (LightGBM) on ALL 16M+ clean data...")
 clf = lgb.LGBMClassifier(
     n_estimators=300,
@@ -95,7 +79,6 @@ y_pred = clf.predict(X_test_scaled)
 print("Accuracy:", accuracy_score(y_test, y_pred))
 print("Confusion matrix:\n", confusion_matrix(y_test, y_pred, labels=['Benign', 'Attack']))
 
-# --- Step 8: Feature Importance ---
 print("\nStep 8: Calculating feature importances...")
 importances = clf.feature_importances_
 feat_importance_df = pd.DataFrame({'Feature': shared_cols, 'Importance': importances})
@@ -103,7 +86,6 @@ feat_importance_df = feat_importance_df.sort_values(by='Importance', ascending=F
 print("Top 10 important features:")
 print(feat_importance_df.head(10))
 
-# --- Step 9: Save the Production Model & Assets ---
 print("\nStep 9: Saving model and supporting assets...")
 joblib.dump(clf, 'intent_firewall_model.joblib')
 joblib.dump(scaler, 'data_scaler.joblib')

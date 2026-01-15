@@ -1,4 +1,4 @@
-# convert_to_parquet.py (Version 8 - FINAL)
+
 import pandas as pd
 import numpy as np
 import glob
@@ -8,18 +8,18 @@ import warnings
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-# Silence warnings
+
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=pd.errors.DtypeWarning)
 
 print("Starting MEMORY-SAFE CHUNK-BASED conversion (v8)...")
 print("This will read, clean, and harmonize all CSVs.")
 
-# --- Configuration ---
+
 csv_path = r'../data/Processed Traffic Data for ML Algorithms/*.csv'
-parquet_path = r'../data/cic_ids_2018_full_harmonized_CLEAN.parquet' # New name
-chunk_size = 500000 # Reads 500,000 rows at a time
-# --- End Configuration ---
+parquet_path = r'../data/cic_ids_2018_full_harmonized_CLEAN.parquet' 
+chunk_size = 500000 
+
 
 all_files = glob.glob(csv_path)
 
@@ -29,7 +29,7 @@ if not all_files:
 
 print(f"Found {len(all_files)} CSV files. Finding common columns...")
 
-# --- Step 1: Find common columns ---
+
 common_cols = None
 for f in all_files:
     df_header = pd.read_csv(f, nrows=0, low_memory=False)
@@ -45,12 +45,12 @@ if 'Label' not in common_cols:
     sys.exit(1)
 print(f"\nFound {len(common_cols)} common columns.")
 
-# --- Step 2: Create a unified data type map (read all as text) ---
+
 print("Creating a unified data type map (read all as string)...")
 dtype_map = {col: 'str' for col in common_cols}
 print("Data type map created.")
 
-# --- Step 3: Convert, Clean, and Append, one chunk at a time ---
+
 print("Converting and cleaning files one-by-one, in chunks...")
 
 if os.path.exists(parquet_path):
@@ -75,41 +75,41 @@ try:
         for i, chunk_df in enumerate(chunk_iterator):
             chunk_df.columns = chunk_df.columns.str.strip() 
             
-            # --- FULL CLEANING LOGIC ---
+            
             numeric_cols = [col for col in chunk_df.columns if col not in ['Label', 'Timestamp']]
             
-            # 1. Convert to numeric, bad strings become NaN
+            
             chunk_df[numeric_cols] = chunk_df[numeric_cols].apply(pd.to_numeric, errors='coerce')
             
-            # 2. Replace Inf with NaN
+            
             chunk_df[numeric_cols] = chunk_df[numeric_cols].replace([np.inf, -np.inf], np.nan)
             
-            # 3. Force all to float64
+            
             chunk_df[numeric_cols] = chunk_df[numeric_cols].astype(np.float64)
             
-            # 4. Fill NaNs with 0.0
+            
             chunk_df[numeric_cols] = chunk_df[numeric_cols].fillna(0.0)
             
-            # 5. Clip negative time features to 0
+            
             iat_cols = [col for col in numeric_cols if 'IAT' in col or 'Duration' in col]
             for col in iat_cols:
                 chunk_df[col] = chunk_df[col].clip(lower=0)
             
-            # 6. Map Labels to Benign/Attack
+           
             chunk_df['Label'] = chunk_df['Label'].apply(lambda x: 'Benign' if str(x).upper() == 'BENIGN' else 'Attack')
-            # --- END CLEANING LOGIC ---
+           
             
             table = pa.Table.from_pandas(chunk_df, preserve_index=False) 
             
             if writer is None:
-                # Create writer based on the schema of the *first clean chunk*
+               
                 writer = pq.ParquetWriter(
                     parquet_path, 
                     table.schema, 
                     compression='snappy'
                 )
             
-            # Write chunk
+           
             writer.write_table(table.cast(writer.schema))
             
             total_rows += len(chunk_df)

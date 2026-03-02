@@ -4,7 +4,7 @@
 ![Machine Learning](https://img.shields.io/badge/ML-LightGBM%20%7C%20Random%20Forest-orange)
 ![Status](https://img.shields.io/badge/Status-Research%20Prototype-green)
 
-## 📌 Overview
+##  Overview
 The **Intent-Aware Firewall** is a next-generation Intrusion Prevention System (IPS) that moves beyond static rules (IP/Port blocking) to analyze the **behavioral intent** of network traffic in real-time.
 
 By leveraging Machine Learning (LightGBM & Random Forest) trained on the **CIC-IDS-2018 dataset**, this system calculates complex statistical features (Inter-Arrival Time, Jitter, Flow Duration) on live packets to distinguish between legitimate human users and malicious botnets/DDoS attacks. When malicious intent is detected, it autonomously interacts with the OS kernel (`netsh`) to block the threat.
@@ -13,7 +13,7 @@ By leveraging Machine Learning (LightGBM & Random Forest) trained on the **CIC-I
 
 ---
 
-## 🚀 Key Features
+## Key Features
 * **Behavioral Analysis:** Does not rely on blacklists. Detects zero-day botnets based on traffic patterns (speed, variance, burstiness).
 * **Real-Time Flow Manager:** A custom bi-directional engine that aggregates raw packets into "Flows" and calculates 79+ statistical features on the fly.
 * **Hybrid AI Engine:**
@@ -24,7 +24,7 @@ By leveraging Machine Learning (LightGBM & Random Forest) trained on the **CIC-I
 
 ---
 
-## 🛠️ Architecture
+## Architecture
 1.  **Packet Sniffer (Scapy):** Intercepts raw frames from the Network Interface Card (NIC).
 2.  **Flow Manager:** Groups packets by 5-tuple `(SrcIP, DstIP, SrcPort, DstPort, Proto)` and maintains a 30-second state window.
 3.  **Feature Extractor:** Calculates statistical variances (e.g., `Fwd IAT Min`, `Pkt Len Std`) in real-time.
@@ -33,7 +33,7 @@ By leveraging Machine Learning (LightGBM & Random Forest) trained on the **CIC-I
 
 ---
 
-## 📂 Dataset Setup
+## Dataset Setup
 Due to file size limits, the training data is **not** included in this repository.
 
 1.  **Download the Dataset:**
@@ -45,7 +45,7 @@ Due to file size limits, the training data is **not** included in this repositor
 
 ---
 
-## 📊 Performance Metrics
+## Performance Metrics
 The models were trained on the **CIC-IDS-2018** dataset (16.2 Million rows) using a high-performance workstation.
 
 | Metric | LightGBM (Recommended) | Random Forest |
@@ -58,7 +58,7 @@ The models were trained on the **CIC-IDS-2018** dataset (16.2 Million rows) usin
 
 ---
 
-## 💻 Tech Stack
+## Tech Stack
 * **Language:** Python 3.x
 * **Packet Manipulation:** Scapy
 * **Machine Learning:** LightGBM, Scikit-Learn, Joblib
@@ -67,7 +67,7 @@ The models were trained on the **CIC-IDS-2018** dataset (16.2 Million rows) usin
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 ### Prerequisites
 * Windows 10/11 (Required for `netsh` blocking commands).
@@ -94,7 +94,7 @@ The models were trained on the **CIC-IDS-2018** dataset (16.2 Million rows) usin
 
 ---
 
-## 🏃 Usage
+## Usage
 
 ### 1. Training the Model (Optional)
 *Note: Pre-trained models (`.joblib`) are included. Only run this if you want to retrain on new data.*
